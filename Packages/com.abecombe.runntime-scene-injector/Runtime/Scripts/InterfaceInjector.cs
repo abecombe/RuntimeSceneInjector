@@ -8,23 +8,31 @@ using System.Collections.Generic;
 namespace RuntimeSceneInjector
 {
     [DefaultExecutionOrder(-9999)]
-    public class InterfaceInjector : MonoBehaviour
+    public class InterfaceInjector : MonoBehaviour, IInterfaceInjector
     {
+        [Header("Settings")]
+        [SerializeField] private bool _injectOnAwake = true;
+
         private static readonly HashSet<Type> SupportedCollectionTypes = new()
         {
             typeof(List<>),
             typeof(IList<>),
             typeof(IReadOnlyList<>),
-
             typeof(ICollection<>),
             typeof(IReadOnlyCollection<>),
-
             typeof(ISet<>),
-
             typeof(IEnumerable<>)
         };
 
         private void Awake()
+        {
+            if (_injectOnAwake)
+            {
+                ExecuteInjection();
+            }
+        }
+
+        public void ExecuteInjection()
         {
             var typedLookUp = FindObjectsByType<Component>(FindObjectsSortMode.None)
                 .SelectMany(component => component.GetType().GetInterfaces(), (component, iface) => (iface, component))
